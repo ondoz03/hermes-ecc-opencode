@@ -8,11 +8,15 @@
 
 ### 1 command, all platforms:
 
-```bash
-# Linux / macOS / Git Bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
+### 🐧 Linux / macOS / Git Bash
 
-# Windows PowerShell
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
+```
+
+### 🪟 Windows PowerShell
+
+```powershell
 powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.ps1 | iex"
 ```
 
