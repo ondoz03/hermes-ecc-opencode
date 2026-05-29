@@ -94,4 +94,18 @@ All ECC agents inherit from a single setting.
 
 ---
 
+## 📁 Repo Contents
+
+```
+github.com/ondoz03/hermes-ecc-opencode
+├── skills/          249 Hermes skills
+├── local-bin/       ecc-init script
+├── reference/       OpenCode config reference
+├── ecc-setup.sh     Setup script (Linux/macOS/Git Bash)
+├── ecc-setup.ps1    Setup script (Windows PowerShell)
+└── README.md        This file
+```
+
+Source: https://github.com/affaan-m/ECC
+
 ---
