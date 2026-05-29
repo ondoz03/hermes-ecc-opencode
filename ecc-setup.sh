@@ -209,9 +209,9 @@ CHOICE="${1:-}"
 if [ -z "$CHOICE" ]; then
   echo "Choose setup (auto-check, skip if already installed):"
   echo ""
-  echo "  ${CYAN}1${NC}) Full     — Hermes + OpenCode + ECC"
-  echo "  ${CYAN}2${NC}) OpenCode — OpenCode + ECC only"
-  echo "  ${CYAN}3${NC}) Hermes   — Restore 249 skills only"
+  echo "  1) Full     — Hermes + OpenCode + ECC"
+  echo "  2) OpenCode — OpenCode + ECC only"
+  echo "  3) Hermes   — Restore 249 skills only"
   echo ""
   read -r -p "Choose [1/2/3] (default: 1): " CHOICE
   CHOICE="${CHOICE:-1}"
