@@ -8,7 +8,7 @@ platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [Coding-Agent, OpenCode, Autonomous, Refactoring, Code-Review]
-    related_skills: [claude-code, codex, hermes-agent]
+    related_skills: [claude-code, codex, hermes-agent, ecc-setup]
 ---
 
 # OpenCode CLI
@@ -24,11 +24,74 @@ Use [OpenCode](https://opencode.ai) as an autonomous coding worker orchestrated 
 
 ## Prerequisites
 
-- OpenCode installed: `npm i -g opencode-ai@latest` or `brew install anomalyco/tap/opencode`
+- OpenCode installed (see platform-specific methods below)
 - Auth configured: `opencode auth login` or set provider env vars (OPENROUTER_API_KEY, etc.)
 - Verify: `opencode auth list` should show at least one provider
 - Git repository for code tasks (recommended)
 - `pty=true` for interactive TUI sessions
+
+### Install OpenCode (Cross-Platform)
+
+| Platform | Method | Command |
+|----------|--------|---------|
+| Linux (curl) | Install script | `curl -fsSL https://opencode.ai/install \| bash` |
+| macOS (brew) | Homebrew | `brew install opencode` |
+| Windows (npm) | Node.js | `npm i -g opencode-ai` |
+| macOS/Linux (npm) | Node.js | `npm i -g opencode-ai` |
+
+**Note on npm global installs:** If you use Hermes Agent, `~/.local/bin/npm` may symlink to Hermes' Node (`~/.hermes/node/bin/npm`). This is fine for OpenCode itself — the CLI binary installs correctly regardless. But for ECC plugin integration, see the ECC Setup skill (`ecc-setup`) for the self-contained config approach that avoids npm dependency entirely.
+
+## ECC Agent Integration (Via ecc-setup Skill)
+
+For adding ECC agents (25+ specialized agents like `security-reviewer`, `planner`, `code-reviewer`) to OpenCode, load the `ecc-setup` skill. It covers:
+
+- Self-contained `.opencode/opencode.json` config (no plugin dependency)
+- Agent definitions + 27 slash commands (`/security`, `/plan`, `/tdd`, etc.)
+- Cross-platform `ecc-init` script with interactive 3-mode menu
+- Model selection via `ecc-init -m <model>`
+- Fixes for namespace `everything-claude-code:` in command templates
+- Agent-level model inheritance from parent config
+
+### ⚠️ CRITICAL: Command Templates Have Old Namespace
+
+Every `commands/*.md` file from ECC's npm package has YAML frontmatter referencing agents with the **old** namespace prefix:
+
+```yaml
+# WRONG — causes "Agent not found" error
+agent: everything-claude-code:security-reviewer
+```
+
+The fix is to strip the prefix from ALL 30 command files:
+```bash
+sed -i 's/agent: everything-claude-code:/agent: /g' .opencode/commands/*.md
+```
+
+This is automated in `ecc-init`. If you manually copy configs, don't skip this step.
+
+### ⚠️ CRITICAL: Agent-Level Models Break on Provider Switch
+
+Original ECC config defines `model` inside each agent object (~25 places). When switching providers, you must update all of them. Using `sed` for this corrupts names (e.g., `anthropic/claude-sonnet-4-5` → `anthropic/deepseek-v4-flash`).
+
+**Fix:** Remove `model` from all agent objects, set once at top level:
+```python
+for agent in d.get('agent', {}).values():
+    agent.pop('model', None)
+d['model'] = 'my-model'
+```
+
+### ⚠️ Plugin Config Alone Doesn't Work
+
+Config `{"plugin": ["ecc-universal"]}` does NOT register agents or commands. You need the full `opencode.json` with agent definitions. See `ecc-setup` skill for details.
+
+### Quick Setup
+```bash
+rm -rf .opencode           # If previously misconfigured
+ecc-init -m deepseek-v4-flash
+opencode
+# Now /security, /plan, /tdd etc. are available
+```
+
+For detailed debugging reference, see `ecc-setup` skill's `references/opencode-namespace-debugging.md`.
 
 ## Binary Resolution (Important)
 

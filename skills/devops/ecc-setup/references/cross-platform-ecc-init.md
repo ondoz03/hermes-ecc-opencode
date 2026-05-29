@@ -1,75 +1,78 @@
-# Cross-Platform ecc-init Setup
+# Cross-Platform ECC Init Guide
 
-Reference for setting up ecc-init on Windows, macOS, and Linux. ECC OpenCode plugin (`ecc-universal`) works on all platforms, but the init script differs per OS.
+Setup ECC + OpenCode di Linux, macOS, Windows.
 
----
-
-## 📦 Install ecc-universal (all platforms)
+## Prerequisite
 
 ```bash
 npm install -g ecc-universal
 ```
 
-Verify:
+## ECC Init Script Per Platform
+
+### Linux / macOS
+
+File: `~/.local/bin/ecc-init`
+
 ```bash
-npm ls -g ecc-universal
+#!/bin/bash
+set -euo pipefail
+
+DEFAULT_MODEL="deepseek-v4-flash"
+
+ECC_PKG="$HOME/.hermes/node/lib/node_modules/ecc-universal"
+DIR="."
+MODEL="$DEFAULT_MODEL"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -m|--model) MODEL="$2"; shift 2 ;;
+    -h|--help)
+      echo "Cara pake: ecc-init [-m model] [direktori]"
+      echo "  ecc-init -m gpt-4o"
+      echo "  ecc-init -m claude-sonnet-4-5"
+      exit 0
+      ;;
+    *) DIR="$1"; shift ;;
+  esac
+done
+
+[ -d "$ECC_PKG" ] || { echo "Install dulu: npm install -g ecc-universal"; exit 1; }
+[ -f "$DIR/.opencode/opencode.json" ] && { echo "Already exists, rm -rf .opencode first"; exit 0; }
+
+mkdir -p "$DIR/.opencode"
+cp -r "$ECC_PKG/.opencode/"* "$DIR/.opencode/"
+rm -f "$DIR/.opencode/package.json" "$DIR/.opencode/package-lock.json" \
+      "$DIR/.opencode/tsconfig.json" "$DIR/.opencode/MIGRATION.md" \
+      "$DIR/.opencode/README.md"
+
+# Python JSON parsing — jangan sed
+python3 -c "
+import json
+d = json.load(open('$DIR/.opencode/opencode.json'))
+d['model'] = '$MODEL'
+d['small_model'] = '$MODEL'
+for a in d.get('agent', {}).values(): a.pop('model', None)
+json.dump(d, open('$DIR/.opencode/opencode.json', 'w'), indent=2)
+"
+
+echo "ECC ready: $(basename $(cd $DIR && pwd)) [model: $MODEL]"
 ```
 
----
-
-## 🐧 Linux ecc-init
-
-**Location:** `~/.local/bin/ecc-init`
-
-**Make executable:**
+Buat executable:
 ```bash
 chmod +x ~/.local/bin/ecc-init
 ```
 
-**Features:**
-- Supports `-m / --model` flag: `ecc-init -m gpt-4o`
-- Auto-detects package path under `$HOME/.hermes/node/lib/node_modules/ecc-universal`
-- Replaces Claude model strings with user's model
-
-**Ensure PATH:**
+Pastikan `~/.local/bin` ada di PATH:
 ```bash
-# Check if ~/.local/bin is in PATH
-echo "$PATH" | grep -q ".local/bin" && echo "in PATH" || echo "not in PATH"
-
-# If not, add to ~/.bashrc or ~/.zshrc (bawaan Ubuntu 24.04 sudah include)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+# atau ~/.zshrc
 ```
 
----
+### Windows CMD
 
-## 🍎 macOS ecc-init
-
-**Location:** `~/.local/bin/ecc-init` (sama kaya Linux)
-
-**Package path berbeda:** Di macOS, npm global biasanya di:
-```
-~/.npm-global/lib/node_modules/ecc-universal
-```
-Atau kalo pake Homebrew Node:
-```
-/usr/local/lib/node_modules/ecc-universal
-```
-
-**Update `ECC_PKG` di script:**
-```bash
-# Di baris 10-11 ecc-init, ganti jadi:
-ECC_PKG="$HOME/.npm-global/lib/node_modules/ecc-universal"
-```
-
-**Make executable:**
-```bash
-chmod +x ~/.local/bin/ecc-init
-```
-
----
-
-## 🪟 Windows CMD ecc-init
-
-**Location:** `C:\Users\<username>\.local\bin\ecc-init.bat`
+File: `C:\Users\<nama>\.local\bin\ecc-init.bat`
 
 ```bat
 @echo off
@@ -77,87 +80,80 @@ set MODEL=%1
 if "%MODEL%"=="" set MODEL=deepseek-v4-flash
 if not exist ".opencode" mkdir .opencode
 copy /y "%APPDATA%\npm\node_modules\ecc-universal\.opencode\opencode.json" .opencode\
-powershell -Command "(Get-Content .opencode\opencode.json) -replace 'claude-sonnet-4-5', '%MODEL%' -replace 'claude-opus-4-5', '%MODEL%' -replace 'claude-haiku-4-5', '%MODEL%' | Set-Content .opencode\opencode.json"
-echo ✅ ECC ready with model: %MODEL%
+copy /y "%APPDATA%\npm\node_modules\ecc-universal\.opencode\prompts" .opencode\prompts\
+copy /y "%APPDATA%\npm\node_modules\ecc-universal\.opencode\commands" .opencode\commands\
+powershell -Command "(Get-Content .opencode\opencode.json) -replace '\"model\": \"[^\"]+\"', '\"model\": \"%MODEL%\"' -replace '\"small_model\": \"[^\"]+\"', '\"small_model\": \"%MODEL%\"' | Set-Content .opencode\opencode.json"
+echo ECC ready with model: %MODEL%
 ```
 
-**Usage:**
-```bat
-cd C:\Users\...\project
-ecc-init.bat deepseek-v4-flash
-ecc-init.bat gpt-4o
-ecc-init.bat claude-sonnet-4-5
-```
+### Windows PowerShell
 
-**Add to PATH:**
-```
-1. Win + X → System → Advanced system settings
-2. Environment Variables → User variables → Path → Edit
-3. Add: C:\Users\<username>\.local\bin\
-4. OK, restart CMD
-```
-
----
-
-## 🪟 Windows PowerShell ecc-init
-
-**Location:** `C:\Users\<username>\Documents\WindowsPowerShell\Scripts\ecc-init.ps1` (atau folder mana pun di PATH)
+File: `C:\Users\<nama>\Documents\WindowsPowerShell\Scripts\ecc-init.ps1`
 
 ```powershell
 param([string]$model = "deepseek-v4-flash")
 $pkg = "$env:APPDATA\npm\node_modules\ecc-universal\.opencode"
-if (-not (Test-Path ".opencode")) { mkdir .opencode }
+if (-not (Test-Path ".opencode")) { mkdir .opencode -Force }
 Copy-Item "$pkg\opencode.json" ".opencode\"
-(Get-Content ".opencode\opencode.json") -replace 'claude-sonnet-4-5', $model -replace 'claude-opus-4-5', $model -replace 'claude-haiku-4-5', $model | Set-Content ".opencode\opencode.json"
-Write-Host "✅ ECC ready with model: $model"
+if (Test-Path "$pkg\prompts") { Copy-Item "$pkg\prompts" ".opencode\" -Recurse }
+if (Test-Path "$pkg\commands") { Copy-Item "$pkg\commands" ".opencode\" -Recurse }
+$json = Get-Content ".opencode\opencode.json" -Raw
+$json = $json -replace '"model": "[^"]+"', '"model": "' + $model + '"'
+$json = $json -replace '"small_model": "[^"]+"', '"small_model": "' + $model + '"'
+$json | Set-Content ".opencode\opencode.json"
+Write-Host "ECC ready with model: $model"
 ```
 
-**Usage:**
+## PATH Setup
+
+### Linux
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### macOS
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+Atau pake `~/.bash_profile`.
+
+### Windows
+PowerShell:
 ```powershell
-cd C:\Users\...\project
-.\ecc-init.ps1
-.\ecc-init.ps1 -model gpt-4o
+$path = [Environment]::GetEnvironmentVariable("Path", "User")
+$newPath = "$env:USERPROFILE\.local\bin"
+if ($path -notlike "*$newPath*") {
+  [Environment]::SetEnvironmentVariable("Path", "$path;$newPath", "User")
+}
 ```
 
----
-
-## ⚙️ Model Parameter
-
-Semua script di atas nerima `-m <model>` atau `--model <model>` untuk specify model AI.
-
-**Contoh model yang umum:**
-| Provider | Model Name |
-|----------|-----------|
-| DeepSeek | `deepseek-v4-flash`, `deepseek/deepseek-chat` |
-| OpenAI | `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo` |
-| Anthropic | `claude-sonnet-4-5`, `claude-opus-4-5`, `claude-haiku-4-5` |
-| Google | `gemini-2.0-flash`, `gemini-2.0-pro` |
-| OpenRouter | `openai/gpt-4o`, `anthropic/claude-sonnet-4-5` |
-| Groq | `groq/llama-3.3-70b`, `groq/deepseek-r1` |
-
-Ganti model kapan aja dengan jalanin ulang `ecc-init -m <model>` di project.
-
----
-
-## 🔧 Manual Tanpa Script
-
-Kalo nggak mau pake script, cukup:
-
-**1. Copy opencode.json dari package:**
-```bash
-# Linux
-cp ~/.hermes/node/lib/node_modules/ecc-universal/.opencode/opencode.json .opencode/
-
-# macOS
-cp ~/.npm-global/lib/node_modules/ecc-universal/.opencode/opencode.json .opencode/
-
-# Windows (PowerShell)
-Copy-Item "$env:APPDATA\npm\node_modules\ecc-universal\.opencode\opencode.json" ".opencode\"
+CMD:
+```cmd
+setx PATH "%PATH%;%USERPROFILE%\.local\bin"
 ```
 
-**2. Ganti model:**
+## Usage
+
 ```bash
-sed -i 's/claude-sonnet-4-5/<model-anda>/g' .opencode/opencode.json
-sed -i 's/claude-opus-4-5/<model-anda>/g' .opencode/opencode.json
-sed -i 's/claude-haiku-4-5/<model-anda>/g' .opencode/opencode.json
+# Init project dengan default model
+cd my-project
+ecc-init
+
+# Init dengan model tertentu
+ecc-init -m gpt-4o
+ecc-init -m claude-sonnet-4-5
+ecc-init -m deepseek-v4-flash
+
+# Init di folder tertentu
+ecc-init -m gpt-4o /path/to/project
+```
+
+## Verify
+
+```bash
+cd my-project
+cat .opencode/opencode.json | grep '"model"'
+# Harusnya: "model": "deepseek-v4-flash" (atau model yang dipilih)
 ```

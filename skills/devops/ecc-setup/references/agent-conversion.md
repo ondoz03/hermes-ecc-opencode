@@ -1,60 +1,105 @@
-# Converting Claude Code Agents to Hermes Skills
+# Agent Conversion: Claude Code → Hermes SKILL.md
 
-## The Problem
-Claude Code agents use a different format than Hermes skills:
-- Claude Code: YAML frontmatter with `name`, `description`, `tools`, `model` fields
-- Hermes: SKILL.md with YAML frontmatter (`name`, `description`) + markdown body
+Convert 63 Claude Code agents from ECC's `agents/` folder to Hermes-compatible SKILL.md format.
 
-The `tools` and `model` fields are Claude Code-specific and must be stripped.
+## Source Format (Claude Code)
 
-## Conversion Script (Python)
+```yaml
+---
+name: planner
+description: Expert planning specialist for complex features...
+tools: ["Read", "Grep", "Glob"]
+model: opus
+---
+## Prompt Defense Baseline
+...
+## Your Role
+...
+```
+
+## Target Format (Hermes)
+
+```yaml
+---
+name: planner
+description: Expert planning specialist for complex features...
+---
+# Planner
+...
+```
+
+## Conversion Rules
+
+1. Keep `name:` and `description:` from YAML frontmatter
+2. Remove `tools:`, `model:`, and other Claude-specific fields
+3. Add `# Title` heading (title-case version of name)
+4. Keep body markdown content unchanged
+
+## Python Conversion Script
 
 ```python
 import os
 
-agents_dir = "/path/to/agents"
-output_dir = os.path.expanduser("~/.hermes/skills/target-category")
+agents_dir = "/path/to/ECC/agents"
+output_dir = "~/.hermes/skills/ecc-agents"
 os.makedirs(output_dir, exist_ok=True)
 
 for fname in sorted(os.listdir(agents_dir)):
     if not fname.endswith('.md'):
         continue
+    
     path = os.path.join(agents_dir, fname)
     with open(path, 'r') as f:
         content = f.read()
+    
     if not content.startswith('---'):
         continue
+    
     end = content.find('\n---', 3)
     if end == -1:
         continue
+    
     frontmatter = content[3:end].strip()
     body = content[end+5:].strip()
     
+    # Extract name and description
     name = None
     description = None
-    clean_lines = []
     for line in frontmatter.split('\n'):
         if line.startswith('name:'):
             name = line.split(':', 1)[1].strip().strip('"\'')
-            clean_lines.append(line)
         elif line.startswith('description:'):
             description = line.split(':', 1)[1].strip().strip('"\'')
-            clean_lines.append(line)
-        # Skip tools:, model:, and other Claude Code-specific fields
     
-    skill_content = f"---\n" + "\n".join(clean_lines) + f"\n---\n\n"
+    if not name:
+        name = fname.replace('.md', '')
+    
+    # Build clean SKILL.md (filter out Claude-specific fields)
+    clean_fm_lines = []
+    for line in frontmatter.split('\n'):
+        if line.startswith('tools:') or line.startswith('model:'):
+            continue
+        clean_fm_lines.append(line)
+    
+    skill_content = "---\n" + "\n".join(clean_fm_lines) + "\n---\n\n"
     skill_content += f"# {name.replace('-', ' ').title()}\n\n"
-    skill_content += f"{description or 'Converted agent'}\n\n" + body
+    skill_content += (description or 'ECC Agent') + "\n\n"
+    skill_content += body
     
     skill_dir = os.path.join(output_dir, name)
     os.makedirs(skill_dir, exist_ok=True)
     with open(os.path.join(skill_dir, "SKILL.md"), 'w') as f:
         f.write(skill_content)
+    
+    print(f"✅ {name}")
 ```
 
-## Key Points
-- Only keep `name:` and `description:` from frontmatter
-- Strip `tools:`, `model:`, and any harness-specific fields
-- Add a `# Title` heading before the body
-- Each agent becomes a subdirectory with SKILL.md
-- Result: Hermes auto-loads based on description matching
+## Stats
+
+| Item | Count |
+|------|-------|
+| Agents in `agents/` | 63 |
+| Successfully converted | 63 |
+| Failed | 0 |
+| Output dir | `~/.hermes/skills/ecc-agents/` |
+| Total Hermes ECC skills | 96 (33 ecc + 63 ecc-agents) |

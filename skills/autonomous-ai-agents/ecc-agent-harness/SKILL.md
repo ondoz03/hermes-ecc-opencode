@@ -169,34 +169,42 @@ After conversion:
 - `ecc-agents/` — 63 converted agents
 - **Total: 96 ECC skills** installed in Hermes
 
-## OpenCode Plugin Setup ⚠️
+## OpenCode Plugin Setup (Self-Contained Config) ⚠️
 
-ECC integrates with OpenCode via npm package `ecc-universal`:
-
-```bash
-# Install globally (one-time)
-npm install -g ecc-universal
-```
-
-**IMPORTANT:** The plugin-only config `{"plugin": ["ecc-universal"]}` is NOT sufficient to register agents or commands. You must use the full `opencode.json` from the package.
+**IMPORTANT:** The plugin-only config `{"plugin": ["ecc-universal"]}` does NOT register agents or commands. You must use the full `opencode.json` from the package with agent definitions.
 
 ### Correct Setup
 
 ```bash
-# Option A: Copy entire .opencode from package (recommended)
+# Use the ecc-init script (recommended — auto-fixes namespace & model)
+cd ~/projects/my-app
+ecc-init -m deepseek-v4-flash
+
+# Or manual: copy full .opencode from package
+cd ~/projects/my-app
 rm -rf .opencode
-cp -r /home/who/.hermes/node/lib/node_modules/ecc-universal/.opencode/* .opencode/
-
-# Option B: Use ecc-init script
-ecc-init
-
-# Option C: From ECC repo (63 agents, not 25)
-cp -r /home/who/herd/ECC/.opencode/* .opencode/
+ECC_PKG=$(npm root -g)/ecc-universal
+cp -r "$ECC_PKG/.opencode/"* .opencode/
+# Then fix namespace + remove plugin + set model
 ```
 
-The difference: `plugin` loads modules, but `agent` + `command` definitions in `opencode.json` are what register your `/security`, `/plan`, `/tdd` commands.
+### Three Critical Fixes (Auto-Handled by ecc-init)
 
-See also: `ecc-setup/references/opencode-plugin-setup.md` for full details.
+1. **Namespace fix** — Every `commands/*.md` has `agent: everything-claude-code:X` instead of just `agent: X`. Strip it or get `Agent not found` errors.
+
+2. **Agent-level models** — Original config defines `model` in every agent (~25 places). Set once at top-level, remove from agents. Using `sed` corrupts names like `anthropic/claude-sonnet-4-5` → `anthropic/deepseek-v4-flash`.
+
+3. **Plugin & instructions** — Remove `plugin` entry, filter `instructions` to only reference local `.opencode/` files.
+
+### Complete Setup
+
+```bash
+npm install -g ecc-universal   # One-time
+ecc-init -m deepseek-v4-flash # Per project
+opencode                     # /security, /plan, /tdd now work
+```
+
+See `ecc-setup` skill and its `references/opencode-namespace-debugging.md` for the full debugging story.
 
 ## Memory Persistence
 
@@ -282,19 +290,40 @@ The daily backup script (`~/.hermes/scripts/ecc-backup-daily.sh`):
 
 ### GitHub Remote
 
-Push backup to a Git repo for cross-machine portability (already configured):
+Backup is split across two repos (public + private):
 
 ```bash
-cd ~/hermes-agent-skill
+# Public repo (skills, scripts, reference configs)
+git clone https://github.com/ondoz03/hermes-ecc-opencode.git
 cp -r ~/.hermes/skills/* skills/
-git add -A && git commit -m "feat: update skills backup"
-git push
+
+# Private repo (memories, config, notes — personal data)
+git clone https://github.com/ondoz03/hermes-ecc-private.git
+cp -r ~/.hermes/memories/* memories/
 ```
 
-Example repo: https://github.com/ondoz03/hermes-agent-skill.git
+**Repos:**
+- **Public:** `ondoz03/hermes-ecc-opencode` — skills, scripts, reference configs
+- **Private:** `ondoz03/hermes-ecc-private` — memories, config, notes
 
 ### Restore on New Machine
 
+Use the one-command setup script (auto-detects OS, shows interactive menu):
+
+```bash
+# Full setup — Hermes + OpenCode + ECC
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
+
+# Or per-mode:
+bash -c "$(curl -fsSL ...)" -- 1  # Full
+bash -c "$(curl -fsSL ...)" -- 2  # OpenCode only
+bash -c "$(curl -fsSL ...)" -- 3  # Hermes only
+
+# Windows PowerShell:
+powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.ps1 | iex"
+```
+
+For manual restore:
 ```bash
 tar -xzf hermes-full-backup-*.tar.gz
 cp -r hermes-backup-*/skills/* ~/.hermes/skills/
@@ -306,17 +335,31 @@ npm install -g ecc-universal
 
 ### ECC Project Init Script
 
-The `ecc-init` script (`~/.local/bin/ecc-init`) quickly bootstraps OpenCode config in any project:
+The `ecc-init` script (`~/.local/bin/ecc-init`) bootstraps OpenCode with full `opencode.json` from the ecc-universal package, applying all critical fixes automatically:
 
 ```bash
 cd ~/projects/my-app
+
+# Default model (deepseek)
 ecc-init
-# Creates .opencode/opencode.json with {"plugin":["ecc-universal"]}
+
+# Or specify model
+ecc-init -m claude-sonnet-4-5
+ecc-init -m gpt-4o
+
+# In a different directory
+ecc-init -m deepseek-v4-flash /path/to/project
 ```
+
+The script auto-fixes:
+- ✅ Namespace prefix (`everything-claude-code:` removed from 30 command files)
+- ✅ Agent-level model removal (all agents inherit from parent)
+- ✅ Plugin removal (self-contained config)
+- ✅ Instructions filtered (only local `.opencode/` files)
 
 ## Related
 
 - [ECC GitHub](https://github.com/affaan-m/ECC) — main repo
 - [ECC Shorthand Guide](https://github.com/affaan-m/ECC#readme) — setup and philosophy
 - [ECC Security Guide](https://github.com/affaan-m/ECC/blob/main/docs/security/SECURITY_GUIDE.md) — AgentShield and attack vectors
-- Hermes Backup Repo: https://github.com/ondoz03/hermes-agent-skill.git
+- Hermes Backup Repo: https://github.com/ondoz03/hermes-ecc-private.git
