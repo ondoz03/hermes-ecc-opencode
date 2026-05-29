@@ -172,6 +172,8 @@ init_opencode_project() {
       rm -rf ".opencode/dist" 2>/dev/null || true
       sed -i 's/agent: everything-claude-code:/agent: /g' .opencode/commands/*.md 2>/dev/null || true
       python3 -c "import json; d=json.load(open('.opencode/opencode.json')); d['model']='$MODEL'; d['small_model']='$MODEL'; [a.pop('model',None) for a in d.get('agent',{}).values()]; d.pop('plugin',None); d['instructions']=[i for i in d.get('instructions',[]) if i.startswith('instructions/')]; json.dump(d,open('.opencode/opencode.json','w'),indent=2)" 2>/dev/null || true
+      # Add Laravel skills as instructions
+      python3 "$HOME/.local/bin/ecc-add-laravel.py" 2>/dev/null || true
     fi
     ok "ECC OpenCode ready (model: $MODEL)"
   fi

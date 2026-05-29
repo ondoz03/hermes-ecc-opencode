@@ -58,20 +58,19 @@ rm -f "$DIR/.opencode/package.json" "$DIR/.opencode/package-lock.json" \
 
 # Bersihin & set model
 python3 -c "
-import json
+import json, os
 path = '$DIR/.opencode/opencode.json'
 d = json.load(open(path))
 d['model'] = '$MODEL'
 d['small_model'] = '$MODEL'
-# Hapus model dari agent biar inherit dari parent
 for name, agent in d.get('agent', {}).items():
     agent.pop('model', None)
-# Hapus plugin (biar nggak depend on module resolution)
 d.pop('plugin', None)
-# Filter instructions — cuma yang ada di .opencode/ aja
 d['instructions'] = [i for i in d.get('instructions', []) if i.startswith('instructions/')]
 json.dump(d, open(path, 'w'), indent=2)
 "
+# Add Laravel skills as OpenCode instructions
+python3 "$HOME/.local/bin/ecc-add-laravel.py" 2>/dev/null || true
 
 # Fix command files — hapus namespace "everything-claude-code:"
 sed -i 's/agent: everything-claude-code:/agent: /g' "$DIR"/.opencode/commands/*.md 2>/dev/null || true
