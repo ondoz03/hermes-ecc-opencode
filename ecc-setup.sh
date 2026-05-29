@@ -49,9 +49,9 @@ warn() { echo -e "   ${YELLOW}⚠️${NC} $1"; }
 fail() { echo -e "   ${RED}❌${NC} $1"; }
 
 check_prerequisites() {
-  step "1" "Cek prerequisites..."
-  command -v node >/dev/null 2>&1 || { fail "Node.js tidak ditemukan"; echo "   Install: https://nodejs.org/"; return 1; }
-  command -v npm  >/dev/null 2>&1 || { fail "npm tidak ditemukan"; return 1; }
+  step "1" "Check prerequisites..."
+  command -v node >/dev/null 2>&1 || { fail "Node.js not found"; echo "   Install: https://nodejs.org/"; return 1; }
+  command -v npm  >/dev/null 2>&1 || { fail "npm not found"; return 1; }
   command -v git  >/dev/null 2>&1 || { fail "Git tidak ditemukan"; echo "   Install: https://git-scm.com/"; return 1; }
   ok "$(node -v) | npm: $(npm -v) | $(git --version | cut -d' ' -f3) | $OS_NAME"
 }
@@ -62,10 +62,10 @@ install_opencode() {
   if command -v opencode &>/dev/null; then
     local ver
     ver=$(opencode --version 2>/dev/null || true)
-    ok "Sudah terinstall ${ver:+($ver)}"
+    ok "Already installed ${ver:+($ver)}"
     return 0
   fi
-  warn "Belum terinstall, menginstall..."
+  warn "Not found, installing..."
   case "$OS_NAME" in
     macOS*)
       if command -v brew &>/dev/null; then
@@ -77,42 +77,42 @@ install_opencode() {
   if command -v opencode &>/dev/null; then ok "Berhasil terinstall"; return 0; fi
   echo "   Mencoba via npm..." && npm install -g opencode-ai 2>&1 || true
   if command -v opencode &>/dev/null; then ok "Berhasil terinstall"; return 0; fi
-  warn "Gagal install. Manual: curl -fsSL https://opencode.ai/install | bash"
+  warn "Install failed. Manual: curl -fsSL https://opencode.ai/install | bash"
   return 1
 }
 
 install_ecc() {
   step "3" "ECC Universal..."
   if npm ls -g ecc-universal &>/dev/null; then
-    ok "Sudah terinstall"
+    ok "Already installed"
     return 0
   fi
-  warn "Belum terinstall, menginstall..."
+  warn "Not found, installing..."
   npm install -g ecc-universal 2>&1 && { ok "ecc-universal terinstall"; return 0; } || true
-  warn "Gagal install. Manual: npm install -g ecc-universal"
+  warn "Install failed. Manual: npm install -g ecc-universal"
   return 1
 }
 
 clone_backup() {
   step "4" "Backup repo..."
   if [ -d "$BACKUP_DIR/.git" ]; then
-    ok "Sudah ada di $BACKUP_DIR (pull update)"
+    ok "Already exists at $BACKUP_DIR (pull update)"
     cd "$BACKUP_DIR" && git pull 2>/dev/null || true
   else
     git clone "$REPO" "$BACKUP_DIR"
-    ok "Dicloned ke $BACKUP_DIR"
+    ok "Cloned to $BACKUP_DIR"
   fi
 }
 
 setup_ecc_init() {
-  step "5" "Script ecc-init..."
+  step "5" "ecc-init script..."
   mkdir -p "$LOCAL_BIN"
   if [ -f "$BACKUP_DIR/local-bin/ecc-init" ]; then
     cp "$BACKUP_DIR/local-bin/ecc-init" "$LOCAL_BIN/ecc-init"
     chmod +x "$LOCAL_BIN/ecc-init"
-    ok "Siap di $LOCAL_BIN/ecc-init"
+    ok "Ready at $LOCAL_BIN/ecc-init"
   else
-    warn "Tidak ditemukan di backup"
+    warn "Not found in backup"
   fi
 }
 
@@ -165,7 +165,7 @@ show_summary() {
   [ -d "$HERMES_HOME/skills" ] && count=$(find "$HERMES_HOME/skills" -name 'SKILL.md' 2>/dev/null | wc -l)
   echo ""
   echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-  echo -e "${GREEN}║           SETUP SELESAI! 🎉           ║${NC}"
+  echo -e "${GREEN}║           SETUP COMPLETE! 🎉           ║${NC}"
   echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
   echo ""
   echo -e "   ${CYAN}Model:${NC}      $MODEL"
@@ -190,19 +190,19 @@ echo ""
 # Pilihan menu
 CHOICE="${1:-}"
 if [ -z "$CHOICE" ]; then
-  echo "Pilih setup (cek otomatis, skip kalo udah ada):"
+  echo "Choose setup (auto-check, skip if already installed):"
   echo ""
   echo "  ${CYAN}1${NC}) Full     — Hermes + OpenCode + ECC"
-  echo "  ${CYAN}2${NC}) OpenCode — OpenCode + ECC aja"
-  echo "  ${CYAN}3${NC}) Hermes   — Restore 249 skills aja"
+  echo "  ${CYAN}2${NC}) OpenCode — OpenCode + ECC only"
+  echo "  ${CYAN}3${NC}) Hermes   — Restore 249 skills only"
   echo ""
-  read -r -p "Pilih [1/2/3] (default: 1): " CHOICE
+  read -r -p "Choose [1/2/3] (default: 1): " CHOICE
   CHOICE="${CHOICE:-1}"
 fi
 
 case "$CHOICE" in
   1|2|3) ;;
-  *) echo -e "${RED}Pilihan tidak valid: $CHOICE${NC}"; exit 1 ;;
+  *) echo -e "${RED}Invalid choice: $CHOICE${NC}"; exit 1 ;;
 esac
 
 echo ""

@@ -26,7 +26,7 @@ Write-Host ""
 
 # Menu interaktif
 if ([string]::IsNullOrEmpty($Mode)) {
-    Write-Host "Pilih setup:"
+    Write-Host "Choose setup:"
     Write-Host ""
     Write-Host "  $([[char]0x1b])[36m1$([[char]0x1b])[0m) Full"
     Write-Host "  $([[char]0x1b])[36m2$([[char]0x1b])[0m) OpenCode"
@@ -36,7 +36,7 @@ if ([string]::IsNullOrEmpty($Mode)) {
     if ([string]::IsNullOrEmpty($Mode)) { $Mode = "1" }
 }
 
-if ($Mode -notin @("1","2","3")) { Write-Host "Pilihan tidak valid" -ForegroundColor Red; exit 1 }
+if ($Mode -notin @("1","2","3")) { Write-Host "Invalid choice" -ForegroundColor Red; exit 1 }
 
 $modeName = @{"1"="Full Setup";"2"="OpenCode Only";"3"="Hermes Only"}
 Write-Host "Mode: $Mode) $($modeName[$Mode])"
@@ -53,9 +53,9 @@ function Fail($msg) { Write-Host "   $([char]0x274C) $msg" -ForegroundColor Red 
 
 # Prerequisites
 function Check-Prereqs {
-    Step "1" "Cek prerequisites..."
-    try { $null = node -v; $null = npm -v } catch { Fail "Node.js/npm tidak ditemukan"; exit 1 }
-    try { $null = git --version } catch { Fail "Git tidak ditemukan"; exit 1 }
+    Step "1" "Check prerequisites..."
+    try { $null = node -v; $null = npm -v } catch { Fail "Node.js/npm not found"; exit 1 }
+    try { $null = git --version } catch { Fail "Git not found"; exit 1 }
     Ok "$(node -v) | npm: $(npm -v) | Git OK"
 }
 
@@ -63,42 +63,42 @@ function Check-Prereqs {
 function Install-OpenCode {
     Write-Host ""
     Step "2" "OpenCode..."
-    try { $ver = opencode --version 2>$null; Ok "Sudah terinstall ($ver)"; return } catch {}
-    Warn "Belum terinstall, menginstall..."
-    try { npm install -g opencode-ai 2>$null; Ok "Berhasil terinstall"; return } catch {}
-    Warn "Gagal. Manual: npm i -g opencode-ai"
+    try { $ver = opencode --version 2>$null; Ok "Already installed ($ver)"; return } catch {}
+    Warn "Not found, installing..."
+    try { npm install -g opencode-ai 2>$null; Ok "Installed successfully"; return } catch {}
+    Warn "Failed. Manual: npm i -g opencode-ai"
 }
 
 # Install ECC
 function Install-ECC {
     Step "3" "ECC Universal..."
     $globalList = npm ls -g ecc-universal 2>$null
-    if ($LASTEXITCODE -eq 0) { Ok "Sudah terinstall"; return }
-    Warn "Belum terinstall, menginstall..."
+    if ($LASTEXITCODE -eq 0) { Ok "Already installed"; return }
+    Warn "Not found, installing..."
     npm install -g ecc-universal 2>$null
-    if ($LASTEXITCODE -eq 0) { Ok "ecc-universal terinstall" } else { Warn "Gagal. Manual: npm install -g ecc-universal" }
+    if ($LASTEXITCODE -eq 0) { Ok "ecc-universal terinstall" } else { Warn "Failed. Manual: npm install -g ecc-universal" }
 }
 
 # Clone backup
 function Clone-Backup {
     Step "4" "Backup repo..."
     if (Test-Path "$BACKUP_DIR\.git") {
-        Ok "Sudah ada di $BACKUP_DIR (pull update)"
+        Ok "Already exists at $BACKUP_DIR (pull update)"
         Set-Location $BACKUP_DIR; git pull 2>$null
     } else {
         git clone $REPO $BACKUP_DIR
-        Ok "Dicloned ke $BACKUP_DIR"
+        Ok "Cloned to $BACKUP_DIR"
     }
 }
 
 # Setup ecc-init
 function Setup-ECCInit {
-    Step "5" "Script ecc-init..."
+    Step "5" "ecc-init script..."
     New-Item -ItemType Directory -Force -Path $LOCAL_BIN | Out-Null
     if (Test-Path "$BACKUP_DIR\local-bin\ecc-init") {
         Copy-Item "$BACKUP_DIR\local-bin\ecc-init" "$LOCAL_BIN\ecc-init"
-        Ok "Siap di $LOCAL_BIN\ecc-init"
-    } else { Warn "Tidak ditemukan" }
+        Ok "Ready at $LOCAL_BIN\ecc-init"
+    } else { Warn "Not found" }
 }
 
 # Restore Hermes
@@ -160,7 +160,7 @@ function Show-Summary {
     $eccOK = npm ls -g ecc-universal 2>$null; $LASTEXITCODE -eq 0
     Write-Host ""
     Write-Host "╔════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║           SETUP SELESAI! 🎉           ║" -ForegroundColor Green
+    Write-Host "║           SETUP COMPLETE! 🎉           ║" -ForegroundColor Green
     Write-Host "╚════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
     Write-Host "   Model:      $Model"

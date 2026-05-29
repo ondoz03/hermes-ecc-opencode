@@ -1,123 +1,99 @@
 # Hermes Skills + ECC OpenCode
 
-**249 skills** untuk Hermes Agent + setup **ECC Universal** untuk OpenCode (Linux, macOS, Windows).
+**249 skills** for Hermes Agent + **ECC Universal** setup for OpenCode (Linux, macOS, Windows).
 
 ---
 
-## 🚀 Install
+## 🚀 Quick Install
 
-### 1 command, semua platform:
+### 1 command, all platforms:
 
 ```bash
 # Linux / macOS / Git Bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-agent-public/main/ecc-setup.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
 
 # Windows PowerShell
-powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-agent-public/main/ecc-setup.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.ps1 | iex"
 ```
 
-Nanti muncul 3 pilihan:
+You'll get 3 options:
 ```
-1) Full Setup     → Hermes + OpenCode + ECC (rekomendasi)
-2) OpenCode Only  → Setup OpenCode + ECC aja  
-3) Hermes Only    → Restore 249 skills aja
+1) Full     — Hermes + OpenCode + ECC
+2) OpenCode — OpenCode + ECC only
+3) Hermes   — Restore 249 skills only
 ```
 
-Script otomatis:
-- Cek & install **Node.js**, **npm**, **Git** (kalo belum ada)
-- Cek & install **OpenCode** (kalo belum ada)
-- Cek & install **ecc-universal** (kalo belum ada)
-- Clone 249 skill Hermes
-- Init `.opencode/` config di project kamu
+The script auto-checks everything — skips if already installed.
 
 ---
 
-## 🎯 Yang Didapat
+## 📦 What You Get
 
 ### 249 Hermes Skills
 
-| Kategori | Jumlah | Contoh |
-|----------|--------|--------|
-| **ecc** | 33 skill | `deep-research`, `security-review`, `tdd-workflow`, `api-design` |
-| **ecc-agents** | 63 skill | `planner`, `architect`, `code-reviewer`, `security-reviewer` |
-| **bug-hunting** | ~45 skill | IDOR, XSS, SSRF, SQLi, GraphQL, LLM injection |
-| **creative** | ~17 skill | ASCII art, diagrams, video, music, pixel art |
-| **software-dev** | ~12 skill | TDD, debugging, code review, planning |
-| **devops** | ~10 skill | Laravel Valet, system diagnostics, MCP |
-| Lainnya | ~69 skill | GitHub, research, ML, media, produktivitas |
+| Category | Count | Examples |
+|----------|-------|----------|
+| **ecc** | 33 | `deep-research`, `security-review`, `tdd-workflow`, `api-design` |
+| **ecc-agents** | 63 | `planner`, `architect`, `code-reviewer`, `security-reviewer` |
+| **bug-hunting** | ~45 | IDOR, XSS, SSRF, SQLi, GraphQL, LLM injection |
+| **creative** | ~17 | ASCII art, diagrams, video, music, pixel art |
+| **software-dev** | ~12 | TDD, debugging, code review, planning |
+| **devops** | ~10 | Laravel Valet, system diagnostics, MCP |
+| Others | ~69 | GitHub, research, ML, media, productivity |
 
 ### 25 OpenCode Agents
 
-Jalanin di terminal pake `/command`:
+Use slash commands in your terminal:
 
 ```
-/plan         → Agent planner            /security   → Agent security-reviewer
-/tdd          → Agent tdd-guide          /code-review→ Agent code-reviewer
-/build-fix    → Agent build-resolver     /e2e        → Agent e2e-runner
-/orchestrate  → Multi-agent planner      /verify     → Verification loop
-/refactor-clean→ Agent refactor-cleaner  /learn      → Extract patterns
-/go-review    → Go review                /go-test    → Go TDD
-/rust-review  → Rust review              /update-docs→ Update docs
-...dan 14 command lainnya
+/plan         → planner agent           /security   → security-reviewer agent
+/tdd          → tdd-guide agent          /code-review→ code-reviewer agent
+/build-fix    → build-error-resolver     /e2e        → e2e-runner agent
+/orchestrate  → multi-agent planner      /verify     → verification loop
+/refactor-clean→ refactor-cleaner       /learn      → extract patterns
+/update-docs  → doc-updater              /go-review  → Go review
+...and 18 more commands
 ```
 
 ---
 
-## ⚙️ Ganti Model
+## ⚙️ Change Model
 
 ```bash
-# Pake model default (deepseek)
+# Default model (deepseek)
 ecc-init
 
-# Atau specify model
+# Or specify any model
 ecc-init -m claude-sonnet-4-5
 ecc-init -m gpt-4o
 ecc-init -m gemini-2.0-flash
 ecc-init -m deepseek-v4-flash
 ```
 
-Semua agent inherit model dari 1 setting — nggak perlu ganti satu-satu.
+All agents inherit from one setting — no need to change each agent.
 
 ---
 
-## 📝 Catatan: Node.js & npm
-
-Di laptop kamu mungkin ada beberapa Node.js:
-
-| Command | Lokasi |
-|---------|--------|
-| `node -v` | Bisa Hermes (v22) atau NVM (v24) tergantung folder |
-| `npm install -g` | Masuk ke Node yang aktif saat itu |
-
-Tapi **nggak masalah** — setup script & `ecc-init` udah self-contained. `ecc-universal` cuma perlu buat referensi config aja.
-
-Kalo mau install ke NVM spesifik:
-```bash
-nvm use 24 && npm install -g ecc-universal
-```
-
----
-
-## 🔄 Pindah PC
+## 🔄 Move to New PC
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-agent-public/main/ecc-setup.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
 ```
 
-Pilih `1) Full Setup` → tunggu selesai → `opencode`.
+Pick `1) Full` → wait → `opencode`. Done.
 
 ---
 
-## 📦 Repo
+## 📁 Repo Contents
 
 ```
-github.com/ondoz03/hermes-agent-public
-├── skills/          249 skill Hermes
-├── local-bin/       Script ecc-init
-├── reference/       Config OpenCode acuan
+github.com/ondoz03/hermes-ecc-opencode
+├── skills/          249 Hermes skills
+├── local-bin/       ecc-init script
+├── reference/       OpenCode config reference
 ├── ecc-setup.sh     Setup script (Linux/macOS/Git Bash)
 ├── ecc-setup.ps1    Setup script (Windows PowerShell)
-└── README.md        Ini
+└── README.md        This file
 ```
 
-Sumber ECC: https://github.com/affaan-m/ECC
+Source: https://github.com/affaan-m/ECC
