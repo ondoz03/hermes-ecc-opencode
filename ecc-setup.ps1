@@ -14,7 +14,7 @@ param(
     [string]$ProjectPath = "."
 )
 
-$REPO = "https://github.com/ondoz03/hermes-agent-skill.git"
+$REPO = "https://github.com/ondoz03/hermes-agent-public.git"
 $BACKUP_DIR = "$env:USERPROFILE\hermes-agent-skill"
 $LOCAL_BIN = "$env:USERPROFILE\.local\bin"
 $HERMES_HOME = "$env:USERPROFILE\.hermes"

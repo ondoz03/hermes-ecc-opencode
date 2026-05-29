@@ -15,7 +15,7 @@ set -euo pipefail
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 MODEL="${2:-deepseek-v4-flash}"
 PROJECT="${3:-.}"
-REPO="https://github.com/ondoz03/hermes-agent-skill.git"
+REPO="https://github.com/ondoz03/hermes-agent-public.git"
 
 # Deteksi OS
 OS="$(uname -s)"
