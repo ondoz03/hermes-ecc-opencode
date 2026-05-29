@@ -121,7 +121,16 @@ restore_hermes() {
   step "6" "Restore Hermes..."
   local count=0
   
-  # Check if already exists
+  # Check if Hermes itself is installed
+  if [ ! -f "$HERMES_HOME/config.yaml" ] && ! command -v hermes &>/dev/null; then
+    warn "Hermes Agent not found at $HERMES_HOME"
+    echo "   Skills will still be downloaded but Hermes needs to be installed separately."
+    echo "   Install Hermes first, then run this script again."
+    echo "   Docs: https://hermes-agent.nousresearch.com/docs"
+    echo ""
+  fi
+  
+  # Check if skills already exist
   local existing=$(find "$HERMES_HOME/skills" -name 'SKILL.md' 2>/dev/null | wc -l)
   if [ "$existing" -gt 0 ] && [ -d "$HERMES_HOME/memories" ]; then
     ok "Hermes already set up ($existing skills found) — skipping"
