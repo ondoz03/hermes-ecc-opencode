@@ -100,7 +100,13 @@ All ECC agents inherit from a single setting.
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
 ```
 
-Pick `1) Full` → wait → `opencode`. Done.
+Pick `1) Full` → wait → `opencode`.
+
+This installs:
+- **OpenCode** CLI (if missing)
+- **ECC agents** (25 agents for slash commands)
+- **Hermes skills** (249 skills — Hermes Agent must be installed separately)
+- **Project config** (`.opencode/` ready to use)
 
 ---
 
