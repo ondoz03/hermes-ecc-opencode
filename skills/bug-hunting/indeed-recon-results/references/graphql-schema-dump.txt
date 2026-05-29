@@ -1,0 +1,41 @@
+# Resume.com GraphQL Schema — Introspection Dump
+
+## Query Fields
+- health(): ResponseStatus
+- getProctorGroups(): ProctorGroupsResponse
+- User(): User
+- Resume(): Resume
+- Autocomplete: Autocomplete
+- Suggestions: Suggestions
+- Counter: Counter
+- CoverLetter: CoverLetter
+
+## Mutation Fields
+- response(): ResponseStatus
+- User(id: ID): User
+- Resume(id: ID): Resume
+- Log(): Log
+- CoverLetter(id: ID): CoverLetter
+
+## Key Object Shapes
+
+### User (43 fields)
+id, accountEmail, firstName, lastName, profileEmail, username, address, city, state, zip, country, phone, lon, lat, photoUrl, headline, linkedinUrl, websiteUrl, createdDate, updatedDate, indeedConnected, plus ~22 more
+
+### Resume (91 fields)
+id, userId, createdDate, updatedDate, wordCount, template, contactDetails { firstName, lastName, email, phone, address, city, zip, country, photoUrl, headline, linkedinUrl, websiteUrl }, sections [ { id, name, title, order, template, visible, wordCount, description } ], analytics { timeCompletedV0, timeCompletedV1, timeExported }
+
+### IndeedResponse
+magicToken: String, indeedEmail: String, accessToken: String, refreshToken: String
+
+### IndeedProfile
+profile { id, source, visibility }
+
+### UserWithMagicToken
+user: User, magicToken: String
+
+### Suggestions
+skills: StringArray, AllJobTitleWithExamples: StringArray, EmploymentText: StringArray, EducationText: StringArray, SummaryText: StringArray, AIExperienceImprover: StringArray, tweakify: TweakifyResponse, generateCoverletter: TweakifyResponse
+
+### TweakifyResponse
+suggestion: String

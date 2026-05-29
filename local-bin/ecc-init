@@ -1,0 +1,87 @@
+#!/bin/bash
+# ECC Init untuk OpenCode
+# Copy config lengkap dari ecc-universal package
+set -euo pipefail
+
+# ⚙️ DEFAULT MODEL — Ganti kalo mau default beda
+DEFAULT_MODEL="deepseek-v4-flash"
+# ============================================
+
+ECC_PKG="$HOME/.hermes/node/lib/node_modules/ecc-universal"
+DIR="."
+MODEL="$DEFAULT_MODEL"
+
+# Parse argumen
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -m|--model)
+      MODEL="$2"
+      shift 2
+      ;;
+    -h|--help)
+      echo "Cara pake: ecc-init [-m|--model <nama-model>] [direktori]"
+      echo ""
+      echo "Contoh:"
+      echo "  ecc-init                          # pake model default"
+      echo "  ecc-init -m claude-sonnet-4-5     # pake Claude"
+      echo "  ecc-init -m gpt-4o                # pake OpenAI"
+      echo "  ecc-init -m gemini-2.0-flash      # pake Gemini"
+      echo "  ecc-init -m deepseek-v4-flash /path/project"
+      exit 0
+      ;;
+    *)
+      DIR="$1"
+      shift
+      ;;
+  esac
+done
+
+if [ ! -d "$ECC_PKG" ]; then
+  echo "❌ ecc-universal belum terinstall."
+  echo "   Jalankan: npm install -g ecc-universal"
+  exit 1
+fi
+
+if [ -f "$DIR/.opencode/opencode.json" ]; then
+  echo "⚠️  $DIR/.opencode/ sudah ada."
+  echo "   Hapus dulu: rm -rf $DIR/.opencode"
+  echo "   Terus jalanin ulang: ecc-init -m $MODEL"
+  exit 0
+fi
+
+mkdir -p "$DIR/.opencode"
+cp -r "$ECC_PKG/.opencode/"* "$DIR/.opencode/"
+
+rm -f "$DIR/.opencode/package.json" "$DIR/.opencode/package-lock.json" \
+      "$DIR/.opencode/tsconfig.json" "$DIR/.opencode/MIGRATION.md" \
+      "$DIR/.opencode/README.md"
+
+# Bersihin & set model
+python3 -c "
+import json
+path = '$DIR/.opencode/opencode.json'
+d = json.load(open(path))
+d['model'] = '$MODEL'
+d['small_model'] = '$MODEL'
+# Hapus model dari agent biar inherit dari parent
+for name, agent in d.get('agent', {}).items():
+    agent.pop('model', None)
+# Hapus plugin (biar nggak depend on module resolution)
+d.pop('plugin', None)
+# Filter instructions — cuma yang ada di .opencode/ aja
+d['instructions'] = [i for i in d.get('instructions', []) if i.startswith('instructions/')]
+json.dump(d, open(path, 'w'), indent=2)
+"
+
+# Fix command files — hapus namespace "everything-claude-code:"
+sed -i 's/agent: everything-claude-code:/agent: /g' "$DIR"/.opencode/commands/*.md 2>/dev/null || true
+
+echo "✅ ECC OpenCode ready for $(basename "$(cd "$DIR" && pwd)")"
+echo "   Model: $MODEL (semua agent inherit dari parent)"
+echo ""
+echo "   Kalo ganti model, tinggal:"
+echo "     ecc-init -m <model-baru>"
+echo ""
+echo "   Command: /plan /tdd /code-review /security /build-fix"
+echo "            /e2e /refactor-clean /orchestrate /learn /verify"
+echo "   ...dan 16 command lainnya"
