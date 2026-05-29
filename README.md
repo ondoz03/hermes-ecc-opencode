@@ -76,20 +76,23 @@ Use slash commands in your terminal:
 
 ---
 
-## ⚙️ Change Model
+## ⚙️ Change Model (OpenCode)
+
+This sets the model for all OpenCode agents (`/plan`, `/security`, etc.).
 
 ```bash
-# Default model (deepseek)
-ecc-init
-
-# Or specify any model
-ecc-init -m claude-sonnet-4-5
-ecc-init -m gpt-4o
-ecc-init -m gemini-2.0-flash
-ecc-init -m deepseek-v4-flash
+# Inside your project folder — configures .opencode/opencode.json
+ecc-init                              # default (deepseek)
+ecc-init -m claude-sonnet-4-5         # Claude
+ecc-init -m gpt-4o                    # OpenAI
+ecc-init -m gemini-2.0-flash          # Gemini
+ecc-init -m deepseek-v4-flash         # DeepSeek
 ```
 
-All agents inherit from one setting — no need to change each agent.
+All agents inherit from one setting — no need to change each one.
+
+> **For Hermes:** Models are set per-provider in `~/.hermes/config.yaml`.
+> This repo does not change Hermes model settings.
 
 ---
 
