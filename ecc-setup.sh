@@ -120,6 +120,14 @@ restore_hermes() {
   echo ""
   step "6" "Restore Hermes..."
   local count=0
+  
+  # Check if already exists
+  local existing=$(find "$HERMES_HOME/skills" -name 'SKILL.md' 2>/dev/null | wc -l)
+  if [ "$existing" -gt 0 ] && [ -d "$HERMES_HOME/memories" ]; then
+    ok "Hermes already set up ($existing skills found) — skipping"
+    return 0
+  fi
+  
   if [ -d "$BACKUP_DIR/skills" ]; then
     mkdir -p "$HERMES_HOME/skills"
     cp -r "$BACKUP_DIR/skills/"* "$HERMES_HOME/skills/" 2>/dev/null
