@@ -190,11 +190,11 @@ echo ""
 # Pilihan menu
 CHOICE="${1:-}"
 if [ -z "$CHOICE" ]; then
-  echo "Pilih setup:"
+  echo "Pilih setup (cek otomatis, skip kalo udah ada):"
   echo ""
-  echo "  ${CYAN}1${NC}) Full"
-  echo "  ${CYAN}2${NC}) OpenCode"
-  echo "  ${CYAN}3${NC}) Hermes"
+  echo "  ${CYAN}1${NC}) Full     — Hermes + OpenCode + ECC"
+  echo "  ${CYAN}2${NC}) OpenCode — OpenCode + ECC aja"
+  echo "  ${CYAN}3${NC}) Hermes   — Restore 249 skills aja"
   echo ""
   read -r -p "Pilih [1/2/3] (default: 1): " CHOICE
   CHOICE="${CHOICE:-1}"
