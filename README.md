@@ -45,15 +45,34 @@ The script auto-checks everything — skips if already installed.
 
 Use slash commands in your terminal:
 
-```
-/plan         → planner agent           /security   → security-reviewer agent
-/tdd          → tdd-guide agent          /code-review→ code-reviewer agent
-/build-fix    → build-error-resolver     /e2e        → e2e-runner agent
-/orchestrate  → multi-agent planner      /verify     → verification loop
-/refactor-clean→ refactor-cleaner       /learn      → extract patterns
-/update-docs  → doc-updater              /go-review  → Go review
-...and 18 more commands
-```
+| Command | Agent | Description |
+|---------|-------|-------------|
+| `/plan` | planner | Implementation planning for complex features |
+| `/tdd` | tdd-guide | Test-driven development workflow |
+| `/code-review` | code-reviewer | Review code quality, security, maintainability |
+| `/security` | security-reviewer | Comprehensive security audit |
+| `/build-fix` | build-error-resolver | Fix build and TypeScript errors |
+| `/e2e` | e2e-runner | End-to-end Playwright testing |
+| `/refactor-clean` | refactor-cleaner | Remove dead code and consolidate duplicates |
+| `/orchestrate` | planner | Multi-agent orchestration for complex tasks |
+| `/learn` | — | Extract patterns and learnings from session |
+| `/checkpoint` | — | Save verification state and progress |
+| `/verify` | — | Run verification loop |
+| `/eval` | — | Run evaluation against criteria |
+| `/update-docs` | doc-updater | Update documentation |
+| `/update-codemaps` | doc-updater | Update codemaps |
+| `/test-coverage` | tdd-guide | Analyze test coverage |
+| `/setup-pm` | — | Configure package manager |
+| `/go-review` | go-reviewer | Go code review |
+| `/go-test` | tdd-guide | Go TDD workflow |
+| `/go-build` | go-build-resolver | Fix Go build errors |
+| `/skill-create` | — | Generate skills from git history |
+| `/instinct-status` | — | View learned instincts |
+| `/instinct-import` | — | Import instincts |
+| `/instinct-export` | — | Export instincts |
+| `/evolve` | — | Cluster instincts into skills |
+| `/promote` | — | Promote project instincts to global scope |
+| `/projects` | — | List known projects and instinct stats |
 
 ---
 
