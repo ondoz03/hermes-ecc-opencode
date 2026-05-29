@@ -192,9 +192,9 @@ CHOICE="${1:-}"
 if [ -z "$CHOICE" ]; then
   echo "Pilih setup:"
   echo ""
-  echo "  ${CYAN}1${NC}) Full Setup     — Hermes + OpenCode + ECC (rekomendasi)"
-  echo "  ${CYAN}2${NC}) OpenCode Only  — Install/setup OpenCode + ECC"
-  echo "  ${CYAN}3${NC}) Hermes Only    — Restore Hermes skills aja"
+  echo "  ${CYAN}1${NC}) Full"
+  echo "  ${CYAN}2${NC}) OpenCode"
+  echo "  ${CYAN}3${NC}) Hermes"
   echo ""
   read -r -p "Pilih [1/2/3] (default: 1): " CHOICE
   CHOICE="${CHOICE:-1}"

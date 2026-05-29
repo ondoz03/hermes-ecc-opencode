@@ -28,9 +28,9 @@ Write-Host ""
 if ([string]::IsNullOrEmpty($Mode)) {
     Write-Host "Pilih setup:"
     Write-Host ""
-    Write-Host "  $([[char]0x1b])[36m1$([[char]0x1b])[0m) Full Setup     — Hermes + OpenCode + ECC (rekomendasi)"
-    Write-Host "  $([[char]0x1b])[36m2$([[char]0x1b])[0m) OpenCode Only  — Install/setup OpenCode + ECC"
-    Write-Host "  $([[char]0x1b])[36m3$([[char]0x1b])[0m) Hermes Only    — Restore Hermes skills aja"
+    Write-Host "  $([[char]0x1b])[36m1$([[char]0x1b])[0m) Full"
+    Write-Host "  $([[char]0x1b])[36m2$([[char]0x1b])[0m) OpenCode"
+    Write-Host "  $([[char]0x1b])[36m3$([[char]0x1b])[0m) Hermes"
     Write-Host ""
     $Mode = Read-Host "Pilih [1/2/3] (default: 1)"
     if ([string]::IsNullOrEmpty($Mode)) { $Mode = "1" }
