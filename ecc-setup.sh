@@ -1,23 +1,15 @@
 #!/usr/bin/env bash
 # ============================================================
-# ECC Setup — Cross-platform (Linux / macOS / Windows Git Bash)
-# One command to setup ECC + OpenCode + Hermes restore
-#
-# Cara pake:
-#   bash ecc-setup.sh                    (interactive menu)
-#   bash ecc-setup.sh 1                  (full setup)
-#   bash ecc-setup.sh 2                  (opencode only)
-#   bash ecc-setup.sh 3                  (hermes restore only)
-#   bash ecc-setup.sh 1 gpt-4o /path    (full + custom model + path)
+# ECC Setup — PUBLIC (hermes-ecc-opencode)
+# Simple: install OpenCode + ECC, init project
+# No backup/restore — that's in the private repo version
 # ============================================================
 set -euo pipefail
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 MODEL="${2:-deepseek-v4-flash}"
 PROJECT="${3:-.}"
-REPO="https://github.com/ondoz03/hermes-ecc-opencode.git"
 
-# Deteksi OS
 OS="$(uname -s)"
 case "$OS" in
   Linux*)   OS_NAME="Linux" ;;
@@ -26,21 +18,8 @@ case "$OS" in
   *)        OS_NAME="$OS" ;;
 esac
 
-case "$OS" in
-  MINGW*|MSYS*|CYGWIN*)
-    HERMES_HOME="${USERPROFILE}/.hermes"
-    BACKUP_DIR="${USERPROFILE}/hermes-ecc-private"
-    LOCAL_BIN="${USERPROFILE}/.local/bin"
-    ;;
-  *)
-    HERMES_HOME="$HOME/.hermes"
-    BACKUP_DIR="$HOME/hermes-ecc-private"
-    LOCAL_BIN="$HOME/.local/bin"
-    ;;
-esac
-
 # ============================================================
-# FUNGSI-FUNGSI
+# FUNCTIONS
 # ============================================================
 
 step() { echo -e "${YELLOW}[$1]${NC} $2"; }
@@ -52,7 +31,7 @@ check_prerequisites() {
   step "1" "Check prerequisites..."
   command -v node >/dev/null 2>&1 || { fail "Node.js not found"; echo "   Install: https://nodejs.org/"; return 1; }
   command -v npm  >/dev/null 2>&1 || { fail "npm not found"; return 1; }
-  command -v git  >/dev/null 2>&1 || { fail "Git tidak ditemukan"; echo "   Install: https://git-scm.com/"; return 1; }
+  command -v git  >/dev/null 2>&1 || { fail "Git not found"; echo "   Install: https://git-scm.com/"; return 1; }
   ok "$(node -v) | npm: $(npm -v) | $(git --version | cut -d' ' -f3) | $OS_NAME"
 }
 
@@ -60,8 +39,7 @@ install_opencode() {
   echo ""
   step "2" "OpenCode..."
   if command -v opencode &>/dev/null; then
-    local ver
-    ver=$(opencode --version 2>/dev/null || true)
+    local ver; ver=$(opencode --version 2>/dev/null || true)
     ok "Already installed ${ver:+($ver)}"
     return 0
   fi
@@ -69,14 +47,14 @@ install_opencode() {
   case "$OS_NAME" in
     macOS*)
       if command -v brew &>/dev/null; then
-        brew install opencode 2>&1 && { ok "Terinstall via brew"; return 0; } || true
+        brew install opencode 2>&1 && { ok "Installed via brew"; return 0; } || true
       fi
       ;;
   esac
-  echo "   Mencoba via script..." && curl -fsSL https://opencode.ai/install | bash 2>&1 || true
-  if command -v opencode &>/dev/null; then ok "Berhasil terinstall"; return 0; fi
-  echo "   Mencoba via npm..." && npm install -g opencode-ai 2>&1 || true
-  if command -v opencode &>/dev/null; then ok "Berhasil terinstall"; return 0; fi
+  echo "   Trying script..." && curl -fsSL https://opencode.ai/install | bash 2>&1 || true
+  if command -v opencode &>/dev/null; then ok "Installed successfully"; return 0; fi
+  echo "   Trying npm..." && npm install -g opencode-ai 2>&1 || true
+  if command -v opencode &>/dev/null; then ok "Installed successfully"; return 0; fi
   warn "Install failed. Manual: curl -fsSL https://opencode.ai/install | bash"
   return 1
 }
@@ -88,111 +66,52 @@ install_ecc() {
     return 0
   fi
   warn "Not found, installing..."
-  npm install -g ecc-universal 2>&1 && { ok "ecc-universal terinstall"; return 0; } || true
+  npm install -g ecc-universal 2>&1 && { ok "ecc-universal installed"; return 0; } || true
   warn "Install failed. Manual: npm install -g ecc-universal"
   return 1
 }
 
-clone_backup() {
-  step "4" "Backup repo..."
-  if [ -d "$BACKUP_DIR/.git" ]; then
-    ok "Already exists at $BACKUP_DIR (pull update)"
-    cd "$BACKUP_DIR" && git pull 2>/dev/null || true
-  else
-    git clone "$REPO" "$BACKUP_DIR"
-    ok "Cloned to $BACKUP_DIR"
-  fi
-}
-
-setup_ecc_init() {
-  step "5" "ecc-init script..."
-  mkdir -p "$LOCAL_BIN"
-  if [ -f "$BACKUP_DIR/local-bin/ecc-init" ]; then
-    cp "$BACKUP_DIR/local-bin/ecc-init" "$LOCAL_BIN/ecc-init"
-    chmod +x "$LOCAL_BIN/ecc-init"
-    ok "Ready at $LOCAL_BIN/ecc-init"
-  else
-    warn "Not found in backup"
-  fi
-}
-
-restore_hermes() {
-  echo ""
-  step "6" "Restore Hermes..."
-  local count=0
-  
-  # Check if Hermes itself is installed
-  if [ ! -f "$HERMES_HOME/config.yaml" ] && ! command -v hermes &>/dev/null; then
-    warn "Hermes Agent not found at $HERMES_HOME"
-    echo "   Skills will still be downloaded but Hermes needs to be installed separately."
-    echo "   Install Hermes first, then run this script again."
-    echo "   Docs: https://hermes-agent.nousresearch.com/docs"
-    echo ""
-  fi
-  
-  # Check if skills already exist
-  local existing=$(find "$HERMES_HOME/skills" -name 'SKILL.md' 2>/dev/null | wc -l)
-  if [ "$existing" -gt 0 ] && [ -d "$HERMES_HOME/memories" ]; then
-    ok "Hermes already set up ($existing skills found) — skipping"
-    return 0
-  fi
-  
-  if [ -d "$BACKUP_DIR/skills" ]; then
-    mkdir -p "$HERMES_HOME/skills"
-    cp -r "$BACKUP_DIR/skills/"* "$HERMES_HOME/skills/" 2>/dev/null
-    count=$(find "$HERMES_HOME/skills" -name 'SKILL.md' 2>/dev/null | wc -l)
-    ok "$count skills"
-  fi
-  if [ -d "$BACKUP_DIR/memories" ]; then
-    mkdir -p "$HERMES_HOME/memories"
-    cp -r "$BACKUP_DIR/memories/"* "$HERMES_HOME/memories/" 2>/dev/null
-    ok "Memories"
-  fi
-  if [ -d "$BACKUP_DIR/config" ]; then
-    mkdir -p "$HERMES_HOME"
-    cp "$BACKUP_DIR/config/"* "$HERMES_HOME/" 2>/dev/null || true
-    ok "Config"
-  fi
-}
-
 init_opencode_project() {
   echo ""
-  step "7" "Init OpenCode project..."
+  step "4" "Init OpenCode project..."
   cd "$PROJECT"
-  if command -v ecc-init &>/dev/null; then
-    ecc-init -m "$MODEL"
-  else
-    # Manual fallback
-    local ECC_PKG
-    ECC_PKG=$(npm root -g 2>/dev/null)/ecc-universal
-    if [ -d "$ECC_PKG" ]; then
-      mkdir -p ".opencode"
-      cp -r "$ECC_PKG/.opencode/"* ".opencode/" 2>/dev/null || true
-      rm -f ".opencode/package.json" ".opencode/package-lock.json" ".opencode/tsconfig.json" ".opencode/MIGRATION.md" ".opencode/README.md" ".opencode/index.ts"
-      rm -rf ".opencode/dist" 2>/dev/null || true
-      sed -i 's/agent: everything-claude-code:/agent: /g' .opencode/commands/*.md 2>/dev/null || true
-      python3 -c "import json; d=json.load(open('.opencode/opencode.json')); d['model']='$MODEL'; d['small_model']='$MODEL'; [a.pop('model',None) for a in d.get('agent',{}).values()]; d.pop('plugin',None); d['instructions']=[i for i in d.get('instructions',[]) if i.startswith('instructions/')]; json.dump(d,open('.opencode/opencode.json','w'),indent=2)" 2>/dev/null || true
-      # Add Laravel skills as instructions
-      python3 "$HOME/.local/bin/ecc-add-laravel.py" 2>/dev/null || true
-    fi
+  local ECC_PKG; ECC_PKG=$(npm root -g 2>/dev/null)/ecc-universal
+  if [ -d "$ECC_PKG" ]; then
+    mkdir -p ".opencode"
+    cp -r "$ECC_PKG/.opencode/"* ".opencode/" 2>/dev/null || true
+    rm -f ".opencode/package.json" ".opencode/package-lock.json" ".opencode/tsconfig.json" \
+          ".opencode/MIGRATION.md" ".opencode/README.md" ".opencode/index.ts"
+    rm -rf ".opencode/dist" 2>/dev/null || true
+    sed -i 's/agent: everything-claude-code:/agent: /g' .opencode/commands/*.md 2>/dev/null || true
+    python3 -c "
+import json
+path = '.opencode/opencode.json'
+d = json.load(open(path))
+d['model'] = '$MODEL'
+d['small_model'] = '$MODEL'
+for name, agent in d.get('agent', {}).items():
+    agent.pop('model', None)
+d.pop('plugin', None)
+d['instructions'] = [i for i in d.get('instructions', []) if i.startswith('instructions/')]
+json.dump(d, open(path, 'w'), indent=2)
+" 2>/dev/null || true
     ok "ECC OpenCode ready (model: $MODEL)"
+  else
+    warn "ecc-universal not found — can't init project"
   fi
 }
 
 show_summary() {
-  local count=0
-  [ -d "$HERMES_HOME/skills" ] && count=$(find "$HERMES_HOME/skills" -name 'SKILL.md' 2>/dev/null | wc -l)
   echo ""
   echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
-  echo -e "${GREEN}║           SETUP COMPLETE! 🎉           ║${NC}"
+  echo -e "${GREEN}║         SETUP COMPLETE! 🎉             ║${NC}"
   echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
   echo ""
-  echo -e "   ${CYAN}Model:${NC}      $MODEL"
-  echo -e "   ${CYAN}Skills:${NC}     $count"
-  echo -e "   ${CYAN}OpenCode:${NC}   $(command -v opencode &>/dev/null && echo '✅' || echo '❌')"
-  echo -e "   ${CYAN}ECC:${NC}        $(npm ls -g ecc-universal &>/dev/null && echo '✅' || echo '❌')"
+  echo -e "   ${CYAN}Model:${NC}    $MODEL"
+  echo -e "   ${CYAN}OpenCode:${NC} $(command -v opencode &>/dev/null && echo '✅' || echo '❌')"
+  echo -e "   ${CYAN}ECC:${NC}      $(npm ls -g ecc-universal &>/dev/null && echo '✅' || echo '❌')"
   echo ""
-  echo -e "   ${CYAN}Next:${NC} cd $(pwd) && opencode"
+  echo -e "   ${CYAN}Next:${NC} opencode"
   echo ""
 }
 
@@ -201,55 +120,13 @@ show_summary() {
 # ============================================================
 
 echo -e "${CYAN}╔════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║         ECC SETUP                      ║${NC}"
+echo -e "${CYAN}║         ECC SETUP — PUBLIC             ║${NC}"
 echo -e "${CYAN}║         $OS_NAME${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════╝${NC}"
 echo ""
 
-# Pilihan menu
-CHOICE="${1:-}"
-if [ -z "$CHOICE" ]; then
-  echo "Choose setup (auto-check, skip if already installed):"
-  echo ""
-  echo "  1) Full     — Hermes + OpenCode + ECC"
-  echo "  2) OpenCode — OpenCode + ECC only"
-  echo "  3) Hermes   — Restore 249 skills only"
-  echo ""
-  read -r -p "Choose [1/2/3] (default: 1): " CHOICE
-  CHOICE="${CHOICE:-1}"
-fi
-
-case "$CHOICE" in
-  1|2|3) ;;
-  *) echo -e "${RED}Invalid choice: $CHOICE${NC}"; exit 1 ;;
-esac
-
-echo ""
-echo -e "${CYAN}Mode:${NC} ${CHOICE}) $(case $CHOICE in 1) echo 'Full Setup';; 2) echo 'OpenCode Only';; 3) echo 'Hermes Only';; esac)"
-echo ""
-
-# Step 1: Prerequisites (selalu)
 check_prerequisites || exit 1
-
-# OpenCode + ECC (mode 1 & 2)
-if [ "$CHOICE" = "1" ] || [ "$CHOICE" = "2" ]; then
-  install_opencode || true
-  install_ecc || true
-  clone_backup
-  setup_ecc_init
-fi
-
-# Hermes restore (mode 1 & 3)
-if [ "$CHOICE" = "1" ] || [ "$CHOICE" = "3" ]; then
-  if [ "$CHOICE" = "3" ]; then
-    clone_backup
-  fi
-  restore_hermes
-fi
-
-# Init project (mode 1 & 2)
-if [ "$CHOICE" = "1" ] || [ "$CHOICE" = "2" ]; then
-  init_opencode_project
-fi
-
+install_opencode || true
+install_ecc || true
+init_opencode_project
 show_summary

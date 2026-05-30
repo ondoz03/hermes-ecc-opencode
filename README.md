@@ -1,12 +1,10 @@
-# Hermes Skills + ECC OpenCode
+# Hermes Skills + ECC OpenCode — Public
 
 **249 skills** for Hermes Agent + **ECC Universal** setup for OpenCode (Linux, macOS, Windows).
 
 ---
 
 ## 🚀 Quick Install
-
-### 1 command, all platforms:
 
 ### 🐧 Linux / macOS / Git Bash
 
@@ -18,13 +16,6 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-openc
 
 ```powershell
 powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.ps1 | iex"
-```
-
-You'll get 3 options:
-```
-1) Full     — Hermes + OpenCode + ECC
-2) OpenCode — OpenCode + ECC only
-3) Hermes   — Restore 249 skills only
 ```
 
 The script auto-checks everything — skips if already installed.
@@ -113,3 +104,10 @@ github.com/ondoz03/hermes-ecc-opencode
 Source: https://github.com/affaan-m/ECC
 
 ---
+
+## 📚 Related
+
+- **Private backup repo:** `ondoz03/hermes-ecc-private` — personal config, memories, notes
+- **ECC (source):** https://github.com/affaan-m/ECC
+- **Hermes Agent:** https://hermes-agent.nousresearch.com/docs
+- **OpenCode:** https://opencode.ai
