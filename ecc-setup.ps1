@@ -15,7 +15,7 @@ param(
 )
 
 $REPO = "https://github.com/ondoz03/hermes-ecc-opencode.git"
-$BACKUP_DIR = "$env:USERPROFILE\hermes-agent-skill"
+$BACKUP_DIR = "$env:USERPROFILE\hermes-ecc-private"
 $LOCAL_BIN = "$env:USERPROFILE\.local\bin"
 $HERMES_HOME = "$env:USERPROFILE\.hermes"
 

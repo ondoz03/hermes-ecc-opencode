@@ -29,12 +29,12 @@ esac
 case "$OS" in
   MINGW*|MSYS*|CYGWIN*)
     HERMES_HOME="${USERPROFILE}/.hermes"
-    BACKUP_DIR="${USERPROFILE}/hermes-agent-skill"
+    BACKUP_DIR="${USERPROFILE}/hermes-ecc-private"
     LOCAL_BIN="${USERPROFILE}/.local/bin"
     ;;
   *)
     HERMES_HOME="$HOME/.hermes"
-    BACKUP_DIR="$HOME/hermes-agent-skill"
+    BACKUP_DIR="$HOME/hermes-ecc-private"
     LOCAL_BIN="$HOME/.local/bin"
     ;;
 esac

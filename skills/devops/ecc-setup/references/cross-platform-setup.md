@@ -12,23 +12,23 @@ Script bash tunggal yang:
 
 ```bash
 # Default (deepseek-v4-flash)
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-agent-skill/main/ecc-setup.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)"
 
 # Custom model + path
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-agent-skill/main/ecc-setup.sh)" -- gpt-4o /path/project
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.sh)" -- gpt-4o /path/project
 ```
 
 ## Windows PowerShell — `ecc-setup.ps1`
 
 ```powershell
-powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-agent-skill/main/ecc-setup.ps1 | iex"
+powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.com/ondoz03/hermes-ecc-opencode/main/ecc-setup.ps1 | iex"
 ```
 
 ## Path per Platform
 | Platform | Hermes Home | Backup Dir |
 |----------|-------------|------------|
-| Linux/macOS | `~/.hermes/` | `~/hermes-agent-skill` |
-| Windows | `%USERPROFILE%\.hermes\` | `%USERPROFILE%\hermes-agent-skill` |
+| Linux/macOS | `~/.hermes/` | `~/hermes-ecc-private` |
+| Windows | `%USERPROFILE%\.hermes\` | `%USERPROFILE%\hermes-ecc-private` |
 
 ## 6 Langkah
 1. Cek node, npm, git

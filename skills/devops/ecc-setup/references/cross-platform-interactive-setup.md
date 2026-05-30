@@ -75,11 +75,11 @@ powershell -ExecutionPolicy Bypass -c "iwr -useb https://raw.githubusercontent.c
 case "$OS" in
   MINGW*|MSYS*|CYGWIN*)
     HERMES_HOME="${USERPROFILE}/.hermes"
-    BACKUP_DIR="${USERPROFILE}/hermes-agent-skill"
+    BACKUP_DIR="${USERPROFILE}/hermes-ecc-private"
     ;;
   *)
     HERMES_HOME="$HOME/.hermes"
-    BACKUP_DIR="$HOME/hermes-agent-skill"
+    BACKUP_DIR="$HOME/hermes-ecc-private"
     ;;
 esac
 ```
